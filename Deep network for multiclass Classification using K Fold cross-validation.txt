@@ -1,0 +1,39 @@
+import numpy as np
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.utils import to_categorical
+from sklearn.model_selection import KFold
+
+# define the dataset
+X = np.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
+y = np.array([0, 1, 2, 0, 1])
+num_classes = 3
+
+# convert class vectors to binary class matrices
+y = to_categorical(y, num_classes)
+
+# define the K-fold cross-validator
+kfold = KFold(n_splits=5, shuffle=True)
+
+# define the model
+def create_model():
+    model = Sequential()
+    model.add(Dense(10, input_dim=2, activation='relu'))
+    model.add(Dense(num_classes, activation='softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    return model
+
+# evaluate the model using K-fold cross-validation
+scores = []
+for train_index, test_index in kfold.split(X):
+    # create and fit the model
+    model = create_model()
+    model.fit(X[train_index], y[train_index], epochs=100, verbose=0)
+    
+    # evaluate the model
+    score = model.evaluate(X[test_index], y[test_index], verbose=0)
+    scores.append(score[1])
+
+# print the mean and standard deviation of the scores
+print('Mean:', np.mean(scores))
+print('Standard deviation:', np.std(scores))
